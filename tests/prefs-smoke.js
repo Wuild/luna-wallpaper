@@ -1,0 +1,25 @@
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Adw from 'gi://Adw';
+Gio.Resource.load('/usr/share/gnome-shell/org.gnome.Shell.Extensions.src.gresource')._register();
+const dist = Gio.File.new_for_uri(import.meta.url).get_parent().get_parent().get_child('dist');
+const [, bytes] = dist.get_child('metadata.json').load_contents(null);
+const metadata = {...JSON.parse(new TextDecoder().decode(bytes)), path: dist.get_path(), dir: dist};
+const {default: Preferences} = await import(dist.get_child('prefs.js').get_uri());
+Adw.init();
+const prefs = new Preferences(metadata);
+const window = new Adw.PreferencesWindow();
+prefs.fillPreferencesWindow(window);
+window.present();
+const loop = new GLib.MainLoop(null, false);
+GLib.timeout_add(GLib.PRIORITY_DEFAULT, 700, () => {
+    if (window.title !== 'Wallpaper settings') throw new Error('Preferences did not build');
+    const settings = prefs.getSettings();
+    settings.set_string('status', 'Preferences smoke test passed.');
+    settings.set_strv('providers', ['bing', 'wallhaven']);
+    window.close();
+    print('LUNA_WALLPAPER_PREFS_PASS');
+    loop.quit();
+    return GLib.SOURCE_REMOVE;
+});
+loop.run();

@@ -1,0 +1,9 @@
+{
+  "name": "luna-wallpaper", "version": "0.1.0", "private": true, "type": "module",
+  "description": "Luna wallpaper providers, rotation and GDM background integration for GNOME 50",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "python3 -m unittest discover -s tests -v && node --test tests/*.test.js",
+    "pack": "pnpm build && python3 scripts/package.py"
+  }
+}

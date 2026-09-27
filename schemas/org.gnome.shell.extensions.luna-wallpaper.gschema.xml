@@ -1,0 +1,19 @@
+<schemalist>
+<schema id="org.gnome.shell.extensions.luna-wallpaper" path="/org/gnome/shell/extensions/luna-wallpaper/">
+<key name="show-panel-button" type="b"><default>true</default><summary>Show the wallpaper panel button</summary></key>
+<key name="recent-urls" type="as"><default>[]</default><summary>Recently applied wallpaper URLs, newest first</summary></key>
+<key name="providers" type="as"><default>['bing']</default><summary>Providers</summary></key>
+<key name="categories" type="as"><default>[]</default><summary>Categories</summary></key>
+<key name="interval" type="u"><default>0</default><summary>Interval</summary></key>
+<key name="rotation-mode" type="s"><default>'daily'</default><summary>Rotation mode</summary></key>
+<key name="bing-market" type="s"><default>'en-US'</default><summary>Bing market</summary></key>
+<key name="query" type="s"><default>''</default><summary>Query</summary></key>
+<key name="last-success" type="d"><default>0</default><summary>Last success</summary></key>
+<key name="current-path" type="s"><default>''</default><summary>Current path</summary></key>
+<key name="current-url" type="s"><default>''</default><summary>Current url</summary></key>
+<key name="current-title" type="s"><default>''</default><summary>Current title</summary></key>
+<key name="current-source" type="s"><default>''</default><summary>Current source</summary></key>
+<key name="status" type="s"><default>'Choose a provider, then change your wallpaper.'</default><summary>Status</summary></key>
+<key name="request" type="s"><default>''</default><summary>Request</summary></key>
+</schema>
+</schemalist>

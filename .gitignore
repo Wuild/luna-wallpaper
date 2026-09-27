@@ -1,0 +1,7 @@
+dist/
+*.zip
+__pycache__/
+.idea/
+.agents/
+.codex/
+*.pyc
