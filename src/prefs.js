@@ -65,6 +65,8 @@ export default class WallpaperPreferences extends ExtensionPreferences {
         const next = new Adw.ActionRow({use_markup: false, title: 'Schedule'});
         rotation.add(next);
         const refreshNext = () => { next.subtitle = nextLabel(settings.get_double('last-success'), settings.get_uint('interval')); };
+        settings.connectObject('changed::last-success', refreshNext,
+            'changed::interval', refreshNext, window);
         refreshNext();
         const gdm = new Adw.PreferencesGroup({title: 'GDM login screen', description: 'System-wide background for all users. Applying or restoring requires administrator authentication. Changes appear the next time GDM starts. Automatic rotation affects desktop and lock screen only. Applying from Devkit also changes the host login screen.'});
         page.add(gdm);

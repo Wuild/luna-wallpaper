@@ -7,6 +7,8 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {isDue} from './model.js';
 
+const SCHEDULE_CHECK_SECONDS = 60;
+
 export default class WallpaperExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
@@ -18,13 +20,25 @@ export default class WallpaperExtension extends Extension {
         this._settings.connectObject('changed::request', () => {
             const action = this._settings.get_string('request').split(':')[0];
             if (['random', 'daily'].includes(action)) this._change(action);
-        }, 'changed::interval', () => this._tick(), this);
-        this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 60, () => {
-            this._tick();
+        }, 'changed::interval', () => this._checkSchedule(), this);
+        this._network = Gio.NetworkMonitor.get_default();
+        this._network.connectObject('network-changed', (_monitor, available) => {
+            if (available) {
+                // Startup can race the network connection. Connectivity
+                // returning is a better retry signal than the failure delay.
+                this._retryAt = 0;
+                this._checkSchedule();
+            }
+        }, this);
+        this._timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, SCHEDULE_CHECK_SECONDS, () => {
+            this._checkSchedule();
             return GLib.SOURCE_CONTINUE;
         });
         this._settings.set_string('status', 'Ready. Desktop and lock screen use the same wallpaper.');
-        this._tick();
+        // Use wall-clock timestamps rather than timer elapsed time. This makes
+        // the first check catch intervals that elapsed while the machine or
+        // session was not running.
+        this._checkSchedule();
     }
 
     _syncButton() {
@@ -46,7 +60,7 @@ export default class WallpaperExtension extends Extension {
         if (this._busy) this._title.label.text = 'Downloading wallpaper…';
     }
 
-    _tick() {
+    _checkSchedule() {
         if (isDue(Date.now() / 1000, this._settings.get_double('last-success'), this._settings.get_uint('interval'), this._retryAt))
             this._change(this._settings.get_string('rotation-mode'));
     }
@@ -135,12 +149,13 @@ export default class WallpaperExtension extends Extension {
 
     disable() {
         this._settings?.disconnectObject(this);
+        this._network?.disconnectObject(this);
         if (this._timer) GLib.Source.remove(this._timer);
         if (this._deadline) GLib.Source.remove(this._deadline);
         this._cancellable?.cancel();
         this._process?.force_exit();
         this._button?.destroy();
-        this._settings = this._background = this._button = this._title = null;
+        this._settings = this._background = this._network = this._button = this._title = null;
         this._cancellable = this._process = null;
         this._timer = this._deadline = 0;
         this._busy = false;
