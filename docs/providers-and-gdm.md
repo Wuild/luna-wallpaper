@@ -31,28 +31,15 @@ in place. Credentials are not required or stored.
 
 ## GDM login screen
 
-GNOME's login screen runs outside your user session. Desktop wallpaper settings
-do not change it. In preferences, **Apply current** launches the bundled helper
-through `pkexec` and requests administrator authentication. It embeds the selected
-image in `/usr/share/gnome-shell/gnome-shell-theme.gresource` and updates the login
-background CSS. **Restore original** restores the saved original resource.
+GNOME's login screen runs outside the user session, so Luna Desktop packages a
+narrow system scheduler instead of running the Shell extension as GDM. The
+extension synchronizes a validated copy of its provider, filters, mode,
+interval, history, and current image through PolicyKit. The scheduler checks the
+same wall-clock interval every minute and downloads a new image even when no
+desktop session is active.
 
-This backend targets systems using that resource path and GNOME's
-`#lockDialogGroup` selector, including the local GNOME 50 installation. A custom
-distribution GDM theme may use another resource and is not supported. The resource
-is shared with Shell, so other places using the same selector may also display
-the background. This is an experimental system-theme modification, not an upstream
-GDM wallpaper API. It is separate from scheduled rotation and never prompts on a
-timer. No service is restarted; the new image appears when GDM next starts (a
-reboot is the most predictable way to test). The real login screen must be tested
-on the host, not inside Devkit. Applying GDM from Devkit still changes the host.
-
-The helper builds and validates a replacement before atomically replacing the
-resource. It saves a private backup and checksums in `/var/lib/luna-wallpaper`.
-It refuses apply/restore if an external tool or system update has changed the
-resource, rather than restoring an outdated GNOME theme. After a package update,
-verify that the current resource is the distro's unmodified version, then move
-`/var/lib/luna-wallpaper` aside as an administrator before applying anew. Keep the
-old backup until satisfied with the result. Restore before removing Luna if you
-want the original GDM background. No custom polkit policy is installed.
-
+GDM's standard background settings point at
+`/var/lib/luna-greeter/current.jpg`. Updates replace that stable file atomically.
+The provider worker and image decoder run in a locked-down dynamic-user systemd
+service, not as root. The old experimental helper that rewrote GNOME Shell's
+theme resource is excluded from Luna builds.

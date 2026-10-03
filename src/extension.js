@@ -6,6 +6,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {isDue} from './model.js';
+import {adoptGreeterWallpaper, GreeterPolicySync} from './greeterSync.js';
 
 const SCHEDULE_CHECK_SECONDS = 60;
 
@@ -13,6 +14,8 @@ export default class WallpaperExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._background = new Gio.Settings({schema_id: 'org.gnome.desktop.background'});
+        adoptGreeterWallpaper(this._settings, this._background);
+        this._greeterSync = new GreeterPolicySync(this._settings);
         this._retryAt = 0;
         this._busy = false;
         this._syncButton();
@@ -148,6 +151,7 @@ export default class WallpaperExtension extends Extension {
     }
 
     disable() {
+        this._greeterSync?.destroy();
         this._settings?.disconnectObject(this);
         this._network?.disconnectObject(this);
         if (this._timer) GLib.Source.remove(this._timer);
@@ -155,7 +159,7 @@ export default class WallpaperExtension extends Extension {
         this._cancellable?.cancel();
         this._process?.force_exit();
         this._button?.destroy();
-        this._settings = this._background = this._network = this._button = this._title = null;
+        this._settings = this._background = this._network = this._button = this._title = this._greeterSync = null;
         this._cancellable = this._process = null;
         this._timer = this._deadline = 0;
         this._busy = false;
