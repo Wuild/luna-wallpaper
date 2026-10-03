@@ -1,9 +1,9 @@
 {
   "uuid": "luna-wallpaper@wuild",
   "name": "Luna - Wallpaper",
-  "description": "Bing daily images, random wallpapers, and scheduled desktop background rotation for GNOME 50.",
+  "description": "Bing daily images, random wallpapers, and scheduled desktop background rotation for GNOME 51.",
   "shell-version": [
-    "50"
+    "51"
   ],
   "version": 1,
   "settings-schema": "org.gnome.shell.extensions.luna-wallpaper",
